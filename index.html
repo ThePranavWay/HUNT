@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZODIAC SEEKER &mdash; The Cyber Hunt Begins</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600&family=Special+Elite&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+<!--
+  ============================================================
+   ZODIAC SEEKER  —  EDITABLE CYBER HUNT
+  ============================================================
+   EVERYTHING YOU NORMALLY WANT TO CHANGE LIVES IN ONE PLACE:
+   scroll down to the  <script id="GAME-CONFIG">  block near the
+   bottom of this file. There you can:
+
+     • add / remove / reorder LEVELS  (question, hint, answers, points)
+     • change how the leaderboard is ranked  (RANKING)
+     • change the admission-number rule, titles, etc. (SETTINGS)
+
+   Nothing else needs editing to add a new level.
+  ============================================================
+-->
+
+<style>
+  :root{
+    --gold: #d4af37;
+    --gold-bright: #f5d781;
+    --gold-dim: #8a6f23;
+    --ink: #050505;
+    --ink-soft: #0c0c0c;
+    --white: #f4f1e8;
+    --green:#7be27b;
+    --red:#e2574c;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;
+    background:var(--ink);
+    color:var(--white);
+    font-family:'EB Garamond', serif;
+    scroll-behavior:smooth;
+    overflow-x:hidden;
+  }
+  body{
+    background:
+      radial-gradient(ellipse at top, #141414 0%, #000000 60%),
+      repeating-linear-gradient(0deg, rgba(212,175,55,0.015) 0px, rgba(212,175,55,0.015) 2px, transparent 2px, transparent 4px);
+  }
+  ::selection{ background:var(--gold); color:#000; }
+
+  .vignette{
+    position:fixed; inset:0; pointer-events:none; z-index:5;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.85) 100%);
+  }
+
+  /* ---------- HERO ---------- */
+  header.hero{
+    min-height:100vh;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    text-align:center; position:relative;
+    padding:40px 20px;
+    border-bottom:1px solid rgba(212,175,55,0.25);
+  }
+  .crosshair{
+    width:90px;height:90px;margin-bottom:18px;opacity:.9;
+    filter:drop-shadow(0 0 10px rgba(212,175,55,0.6));
+    animation: spin 18s linear infinite;
+  }
+  @keyframes spin{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+  .eyebrow{
+    letter-spacing:.5em; font-family:'Special Elite', monospace;
+    color:var(--gold-dim); font-size:.85rem; margin-bottom:10px; text-transform:uppercase;
+  }
+  h1.title{
+    font-family:'Cinzel Decorative', serif;
+    font-size:clamp(3.2rem, 11vw, 8rem);
+    margin:0; line-height:1;
+    background:linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 45%, #7a5f1c 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow: 0 0 35px rgba(212,175,55,0.35); letter-spacing:.05em;
+  }
+  h2.subtitle{
+    font-family:'Cinzel', serif; font-weight:600;
+    font-size:clamp(1.3rem, 4vw, 2.4rem);
+    letter-spacing:.6em; margin:14px 0 0; color:var(--white);
+    text-transform:uppercase; text-indent:.6em;
+  }
+  h2.subtitle span{ color:var(--gold); }
+  .tagline{
+    margin-top:28px; max-width:620px; color:#cfcfcf;
+    font-style:italic; font-size:1.15rem; line-height:1.6;
+  }
+  .scroll-cue{
+    margin-top:50px; color:var(--gold-dim);
+    font-family:'Special Elite', monospace; font-size:.8rem;
+    letter-spacing:.3em; opacity:.8;
+    animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{ 0%,100%{opacity:.35;} 50%{opacity:1;} }
+
+  main{ max-width:860px; margin:0 auto; padding:70px 22px 20px; }
+
+  /* ---------- NAV BAR ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:20;
+    display:flex; flex-wrap:wrap; gap:8px;
+    align-items:center; justify-content:center;
+    padding:10px 14px;
+    background:rgba(5,5,5,.92);
+    border-bottom:1px solid rgba(212,175,55,.28);
+    backdrop-filter:blur(6px);
+  }
+  .topbar .agent-chip{
+    font-family:'Special Elite',monospace; font-size:.72rem;
+    color:var(--gold-bright); letter-spacing:.08em;
+    border:1px solid rgba(212,175,55,.35); padding:6px 10px; border-radius:40px;
+    margin-right:auto;
+  }
+  .nav-btn{
+    background:transparent; border:1px solid rgba(212,175,55,.4);
+    color:var(--gold); font-family:'Cinzel',serif; font-size:.72rem;
+    letter-spacing:.15em; text-transform:uppercase;
+    padding:7px 13px; border-radius:3px; cursor:pointer;
+    transition:background .18s, color .18s, transform .12s;
+  }
+  .nav-btn:hover{ background:var(--gold); color:#000; transform:translateY(-1px); }
+  .nav-btn.ghost{ border-color:#3a3222; color:#8c8268; }
+
+  .run-clock{
+    display:flex; align-items:center; gap:8px;
+    font-family:'Special Elite',monospace; font-size:1rem; letter-spacing:.18em;
+    color:var(--gold-bright);
+    border:1px solid rgba(212,175,55,.45); border-radius:40px;
+    padding:6px 14px; background:rgba(212,175,55,.06);
+    box-shadow:0 0 16px rgba(212,175,55,.12);
+  }
+  .run-clock .dot{
+    width:8px; height:8px; border-radius:50%; background:var(--red);
+    box-shadow:0 0 8px var(--red); animation:blink 1s steps(1,end) infinite;
+  }
+  @keyframes blink{ 0%,49%{opacity:1;} 50%,100%{opacity:.15;} }
+  .run-clock.stopped .dot{ background:var(--green); box-shadow:0 0 8px var(--green); animation:none; }
+
+  .big-clock{
+    text-align:center; margin:0 0 26px;
+  }
+  .big-clock .t{
+    font-family:'Special Elite',monospace;
+    font-size:clamp(2.4rem,9vw,3.6rem);
+    color:var(--gold-bright); letter-spacing:.14em; line-height:1;
+    text-shadow:0 0 26px rgba(212,175,55,.3);
+  }
+  .big-clock .lbl{
+    font-family:'Cinzel',serif; font-size:.7rem; letter-spacing:.3em;
+    text-transform:uppercase; color:#8a8268; margin-top:8px;
+  }
+
+  /* ---------- DOSSIER ---------- */
+  .welcome-banner{
+    border:1px solid rgba(212,175,55,.35);
+    background:linear-gradient(180deg, rgba(212,175,55,.07), rgba(212,175,55,0));
+    padding:22px 24px; border-radius:5px; margin-bottom:46px; text-align:center;
+  }
+  .welcome-banner h3{
+    font-family:'Cinzel', serif; color:var(--gold-bright);
+    letter-spacing:.12em; margin:0 0 8px; font-size:1.5rem; text-transform:uppercase;
+  }
+  .welcome-banner p{ margin:0; color:#d8d2bd; font-size:.95rem; }
+
+  section.dossier{ margin-bottom:56px; }
+  section.dossier h4{
+    font-family:'Cinzel', serif; color:var(--gold);
+    letter-spacing:.18em; text-transform:uppercase; font-size:1.15rem;
+    border-bottom:1px solid rgba(212,175,55,.3);
+    padding-bottom:10px; margin-bottom:18px;
+    display:flex; align-items:center; gap:10px;
+  }
+  section.dossier h4::before{ content:"⌖"; color:var(--gold-bright); }
+  section.dossier p{ font-size:1.08rem; line-height:1.85; color:#e3e0d2; margin:0 0 16px; }
+  section.dossier p strong{ color:var(--gold-bright); font-weight:600; }
+  blockquote.zodiac-quote{
+    border-left:3px solid var(--gold); margin:28px 0; padding:6px 22px;
+    font-family:'Special Elite', monospace; color:var(--gold-bright);
+    font-size:1rem; line-height:1.7; background:rgba(212,175,55,.04);
+  }
+  .evidence{ margin:60px 0 20px; text-align:center; }
+  .evidence h4{
+    font-family:'Cinzel', serif; color:var(--gold); letter-spacing:.18em;
+    text-transform:uppercase; font-size:1.15rem; margin-bottom:22px;
+  }
+  .evidence img{
+    max-width:100%; border:1px solid var(--gold-dim);
+    box-shadow:0 0 40px rgba(212,175,55,.25); filter:sepia(.15) contrast(1.03);
+  }
+  .evidence figcaption{
+    margin-top:14px; font-family:'Special Elite', monospace;
+    font-size:.8rem; color:#9a8a5a; letter-spacing:.05em;
+  }
+
+  /* ---------- PANELS (hunt / leaderboard) ---------- */
+  .panel{ display:none; }
+  .panel.active{ display:block; animation:fade .45s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:none;} }
+
+  .panel-head{
+    text-align:center; margin-bottom:34px;
+  }
+  .panel-head h3{
+    font-family:'Cinzel Decorative', serif; font-size:2rem; margin:0 0 6px;
+    color:var(--gold-bright); letter-spacing:.06em;
+  }
+  .panel-head .sub{
+    font-family:'Special Elite',monospace; color:#8a8268;
+    font-size:.78rem; letter-spacing:.22em; text-transform:uppercase;
+  }
+
+  /* progress */
+  .progress-wrap{ margin:0 0 30px; }
+  .progress-bar{
+    height:8px; background:#15130d; border:1px solid #2d2718; border-radius:40px; overflow:hidden;
+  }
+  .progress-fill{
+    height:100%; width:0%; border-radius:40px;
+    background:linear-gradient(90deg, var(--gold-dim), var(--gold-bright));
+    transition:width .5s ease;
+  }
+  .progress-meta{
+    display:flex; justify-content:space-between;
+    font-family:'Special Elite',monospace; font-size:.72rem;
+    color:#8a8268; letter-spacing:.1em; margin-top:8px;
+  }
+
+  /* level card */
+  .level-card{
+    border:1px solid rgba(212,175,55,.3);
+    background:linear-gradient(180deg,#0c0b08,#060606);
+    border-radius:6px; padding:26px 24px; margin-bottom:18px;
+    position:relative; transition:border-color .2s, box-shadow .2s;
+  }
+  .level-card.current{ border-color:var(--gold); box-shadow:0 0 34px rgba(212,175,55,.16); }
+  .level-card.locked{ opacity:.45; }
+  .level-card.solved{ border-color:rgba(123,226,123,.35); }
+  .level-top{
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px;
+  }
+  .level-no{
+    font-family:'Special Elite',monospace; font-size:.72rem; letter-spacing:.2em;
+    color:#000; background:var(--gold); padding:4px 9px; border-radius:3px;
+  }
+  .level-card.solved .level-no{ background:var(--green); }
+  .level-card.locked .level-no{ background:#3a3222; color:#9a9a9a; }
+  .level-title{
+    font-family:'Cinzel',serif; font-size:1.2rem; color:var(--gold-bright);
+    letter-spacing:.1em; text-transform:uppercase; margin:0;
+  }
+  .level-timer{
+    margin-left:auto; font-family:'Special Elite',monospace;
+    font-size:.95rem; color:var(--gold); letter-spacing:.12em;
+  }
+  .level-body p.riddle{ font-size:1.05rem; line-height:1.8; color:#e3e0d2; margin:0 0 6px; }
+  .cipher{
+    font-family:'Special Elite',monospace; letter-spacing:.35em;
+    color:var(--gold-bright); background:rgba(212,175,55,.05);
+    border-left:3px solid var(--gold); padding:12px 16px; margin:16px 0;
+    word-break:break-word; font-size:1rem;
+  }
+  .answer-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+  .answer-row input{
+    flex:1 1 220px; background:#0a0a0a; border:1px solid #3a3222; color:var(--white);
+    padding:12px; font-size:1rem; font-family:'EB Garamond',serif; border-radius:3px; outline:none;
+    transition:border-color .2s, box-shadow .2s;
+  }
+  .answer-row input:focus{ border-color:var(--gold); box-shadow:0 0 10px rgba(212,175,55,.3); }
+  .btn-gold{
+    padding:12px 20px; border:none; border-radius:3px; cursor:pointer;
+    background:linear-gradient(180deg, var(--gold-bright), var(--gold-dim)); color:#000;
+    font-family:'Cinzel',serif; font-weight:600; letter-spacing:.14em;
+    text-transform:uppercase; font-size:.82rem;
+    transition:transform .15s, box-shadow .15s;
+  }
+  .btn-gold:hover{ transform:translateY(-1px); box-shadow:0 4px 18px rgba(212,175,55,.4); }
+  .btn-line{
+    padding:12px 16px; border:1px solid #3a3222; background:transparent; color:#9a8a5a;
+    border-radius:3px; cursor:pointer; font-family:'Special Elite',monospace; font-size:.75rem;
+    letter-spacing:.12em; text-transform:uppercase;
+  }
+  .btn-line:hover{ border-color:var(--gold); color:var(--gold); }
+  .feedback{
+    margin-top:12px; min-height:20px; font-family:'Special Elite',monospace; font-size:.85rem;
+  }
+  .feedback.ok{ color:var(--green); }
+  .feedback.bad{ color:var(--red); }
+  .hint-box{
+    display:none; margin-top:12px; padding:10px 14px; font-size:.92rem;
+    border:1px dashed rgba(212,175,55,.35); color:#cdbf90; border-radius:4px;
+  }
+  .solved-line{
+    font-family:'Special Elite',monospace; font-size:.8rem; color:var(--green); letter-spacing:.08em;
+  }
+  .locked-line{
+    font-family:'Special Elite',monospace; font-size:.8rem; color:#7d7d7d; letter-spacing:.08em;
+  }
+
+  function paintClock(){
+    const a = agent(); if(!a) return;
+    const t = fmt(missionElapsed());
+    const rc = document.getElementById('runClockTime');
+    const bc = document.getElementById('bigClock');
+    if(rc) rc.textContent = t;
+    if(bc) bc.textContent = t;
+    const done = LEVELS.length > 0 && a.progress.every(p=>p.solved);
+    const wrap = document.getElementById('runClock');
+    if(wrap) wrap.classList.toggle('stopped', done);
+  }
+
+  /* ---------- LEADERBOARD ---------- */
+  .lb-controls{
+    display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:22px;
+  }
+  table.lb{
+    width:100%; border-collapse:collapse;
+    border:1px solid rgba(212,175,55,.28); font-size:.95rem;
+  }
+  table.lb th{
+    font-family:'Cinzel',serif; font-size:.72rem; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--gold); text-align:left; padding:12px 10px;
+    border-bottom:1px solid rgba(212,175,55,.3); background:rgba(212,175,55,.05);
+    white-space:nowrap;
+  }
+  table.lb td{
+    padding:11px 10px; border-bottom:1px solid rgba(212,175,55,.1); color:#ddd8c6;
+  }
+  table.lb tr.me td{ background:rgba(212,175,55,.09); color:var(--gold-bright); }
+  .rank{
+    font-family:'Special Elite',monospace; font-weight:700; letter-spacing:.05em;
+  }
+  .rank.r1{ color:#ffd76a; } .rank.r2{ color:#d6d6d6; } .rank.r3{ color:#c58f52; }
+  .mono{ font-family:'Special Elite',monospace; font-size:.88rem; }
+  .empty-lb{
+    text-align:center; padding:40px 10px; color:#7a7360;
+    font-family:'Special Elite',monospace; font-size:.85rem; letter-spacing:.1em;
+  }
+  .lb-note{
+    margin-top:18px; text-align:center; font-size:.75rem; color:#6b6450;
+    font-family:'Special Elite',monospace; line-height:1.7;
+  }
+  .table-scroll{ overflow-x:auto; }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    border-top:1px solid rgba(212,175,55,.25);
+    text-align:center; padding:34px 20px 44px; margin-top:40px;
+  }
+  footer .quest-line{
+    font-family:'Cinzel Decorative', serif; color:var(--gold-bright);
+    font-size:1.1rem; letter-spacing:.15em; margin-bottom:8px;
+  }
+  footer .dev-line{
+    font-family:'Special Elite', monospace; color:#8c8c8c; font-size:.85rem; letter-spacing:.1em;
+  }
+
+  /* ---------- AUTH GATE ---------- */
+  #authGate{
+    position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.93);
+    display:flex; align-items:center; justify-content:center; padding:20px; overflow-y:auto;
+  }
+  .auth-box{
+    width:100%; max-width:440px;
+    background:linear-gradient(180deg,#0d0d0d,#050505);
+    border:1px solid var(--gold-dim); box-shadow:0 0 60px rgba(212,175,55,.15);
+    padding:34px 30px 28px; border-radius:6px; position:relative;
+  }
+  .auth-box::before{
+    content:""; position:absolute; inset:8px;
+    border:1px solid rgba(212,175,55,.2); pointer-events:none; border-radius:3px;
+  }
+  .auth-box h3{
+    font-family:'Cinzel', serif; text-align:center; color:var(--gold-bright);
+    letter-spacing:.15em; text-transform:uppercase; margin:0 0 4px; font-size:1.25rem;
+  }
+  .auth-box .auth-sub{
+    text-align:center; color:#8a8a8a; font-size:.82rem; margin-bottom:24px;
+    font-family:'Special Elite', monospace; letter-spacing:.05em;
+  }
+  .field{ margin-bottom:16px; }
+  .field label{
+    display:block; font-size:.75rem; letter-spacing:.15em; text-transform:uppercase;
+    color:var(--gold-dim); margin-bottom:6px; font-family:'Special Elite', monospace;
+  }
+  .field input{
+    width:100%; background:#0a0a0a; border:1px solid #3a3222; color:var(--white);
+    padding:11px 12px; font-size:1rem; font-family:'EB Garamond', serif;
+    border-radius:3px; outline:none; transition:border-color .2s, box-shadow .2s;
+  }
+  .field input:focus{ border-color:var(--gold); box-shadow:0 0 10px rgba(212,175,55,.3); }
+  .field input::placeholder{ color:#555; }
+  #authForm button{
+    width:100%; margin-top:8px; padding:13px;
+    background:linear-gradient(180deg, var(--gold-bright), var(--gold-dim));
+    color:#000; border:none; border-radius:3px; font-family:'Cinzel', serif;
+    font-weight:600; letter-spacing:.15em; text-transform:uppercase; font-size:.9rem;
+    cursor:pointer; transition:transform .15s, box-shadow .15s;
+  }
+  #authForm button:hover{ transform:translateY(-1px); box-shadow:0 4px 18px rgba(212,175,55,.4); }
+  .auth-msg{
+    margin-top:14px; font-size:.85rem; text-align:center; min-height:20px;
+    font-family:'Special Elite', monospace;
+  }
+  .auth-msg.error{ color:var(--red); }
+  .auth-msg.success{ color:var(--green); }
+  .auth-note{
+    margin-top:18px; font-size:.68rem; text-align:center; color:#5a5540;
+    line-height:1.5; font-family:'Special Elite', monospace;
+  }
+
+  #siteBody{ display:none; }
+  #siteBody.unlocked{ display:block; }
+
+  /* toast */
+  #toast{
+    position:fixed; left:50%; bottom:26px; transform:translate(-50%,120%);
+    background:#0d0c08; border:1px solid var(--gold); color:var(--gold-bright);
+    padding:12px 20px; border-radius:4px; z-index:80;
+    font-family:'Special Elite',monospace; font-size:.85rem; letter-spacing:.08em;
+    transition:transform .35s ease; max-width:90vw; text-align:center;
+  }
+  #toast.show{ transform:translate(-50%,0); }
+
+  @media (max-width:480px){
+    h2.subtitle{ letter-spacing:.3em; text-indent:.3em; }
+    .topbar .agent-chip{ margin-right:0; width:100%; text-align:center; }
+    main{ padding-top:40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="vignette"></div>
+
+<!-- ============ AUTHORIZATION GATE ============ -->
+<div id="authGate">
+  <div class="auth-box">
+    <h3>Agent Authorization</h3>
+    <div class="auth-sub">// IDENTIFY YOURSELF BEFORE THE HUNT BEGINS //</div>
+    <form id="authForm" autocomplete="off">
+      <div class="field">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" placeholder="Enter your name" required>
+      </div>
+      <div class="field">
+        <label for="section">Section</label>
+        <input type="text" id="section" placeholder="e.g. A" required>
+      </div>
+      <div class="field">
+        <label for="klass">Class</label>
+        <input type="text" id="klass" placeholder="e.g. 10th" required>
+      </div>
+      <div class="field">
+        <label for="admission">Admission Number (4 digits)</label>
+        <input type="text" id="admission" placeholder="e.g. 1234" inputmode="numeric" maxlength="4" pattern="\d{4}" required>
+      </div>
+      <button type="submit">Enter the Hunt</button>
+      <div class="auth-msg" id="authMsg"></div>
+    </form>
+    <div class="auth-note">
+      One admission number = one agent profile. Returning with the same number resumes your run and your leaderboard position.
+    </div>
+  </div>
+</div>
+
+<!-- ============ MAIN SITE ============ -->
+<div id="siteBody">
+
+  <header class="hero">
+    <svg class="crosshair" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="46" fill="none" stroke="#d4af37" stroke-width="3"/>
+      <line x1="50" y1="0" x2="50" y2="100" stroke="#d4af37" stroke-width="3"/>
+      <line x1="0" y1="50" x2="100" y2="50" stroke="#d4af37" stroke-width="3"/>
+    </svg>
+    <div class="eyebrow">A Cyber Hunt Game</div>
+    <h1 class="title">ZODIAC</h1>
+    <h2 class="subtitle"><span>Seeker</span> Protocol</h2>
+    <p class="tagline">Four ciphers. One identity. Decades of silence. You are now an Agent of the Hunt &mdash; trace the signs the Zodiac left behind and uncover what official investigators never could.</p>
+    <div class="scroll-cue">▾ SCROLL TO BEGIN THE DOSSIER ▾</div>
+  </header>
+
+  <nav class="topbar">
+    <div class="agent-chip" id="agentChip">AGENT —</div>
+    <div class="run-clock" id="runClock" title="Time since you entered the hunt">
+      <span class="dot"></span><span id="runClockTime">00:00</span>
+    </div>
+    <button class="nav-btn" data-panel="dossierPanel">Dossier</button>
+    <button class="nav-btn" data-panel="huntPanel">The Hunt</button>
+    <button class="nav-btn" data-panel="boardPanel">Leaderboard</button>
+  </nav>
+
+  <main>
+
+    <div class="welcome-banner" id="welcomeBanner">
+      <h3 id="welcomeName">Welcome, Agent</h3>
+      <p>Your credentials are logged into this hunt archive. Review the case file, then open <strong>The Hunt</strong> &mdash; your timer starts the moment a level is revealed.</p>
+    </div>
+
+    <!-- ============ DOSSIER PANEL ============ -->
+    <div class="panel active" id="dossierPanel">
+
+      <section class="dossier">
+        <h4>Who Was the Zodiac Killer?</h4>
+        <p>The <strong>Zodiac Killer</strong> is the pseudonym of an unidentified serial killer who murdered at least five people in the San Francisco Bay Area between December 1968 and October 1969. He attacked three couples and a cab driver across Benicia, Vallejo, Napa County, and the city of San Francisco itself &mdash; seven victims in total, five of whom died and two of whom survived.</p>
+        <p>What set him apart from every other killer of his era was not just the violence, but the theater around it: he wrote directly to newspapers, taunted the police, and signed his letters with a symbol resembling the crosshairs of a gun sight &mdash; a mark that has since become one of the most recognizable icons in true crime history.</p>
+      </section>
+
+      <section class="dossier">
+        <h4>The Known Attacks</h4>
+        <p><strong>December 20, 1968</strong> &mdash; David Faraday (17) and Betty Lou Jensen (16) were shot on Lake Herman Road near Benicia, California, in what is considered the first Zodiac attack.</p>
+        <p><strong>July 4&ndash;5, 1969</strong> &mdash; Michael Mageau and Darlene Ferrin were shot at Blue Rock Springs Park in Vallejo. Mageau survived; Ferrin did not.</p>
+        <p><strong>September 27, 1969</strong> &mdash; Bryan Hartnell and Cecelia Shepard were stabbed at Lake Berryessa in Napa County. Hartnell survived; Shepard died two days later.</p>
+        <p><strong>October 11, 1969</strong> &mdash; Cab driver Paul Lee Stine was shot and killed in the Presidio Heights neighborhood of San Francisco. A swatch of his bloodied shirt was later mailed to attorney Melvin Belli as proof of the killer's identity.</p>
+      </section>
+
+      <section class="dossier">
+        <h4>Letters, Symbols &amp; Ciphers</h4>
+        <p>Between 1969 and 1974, the Zodiac mailed more than twenty letters to Bay Area newspapers &mdash; including the <em>San Francisco Chronicle</em>, the <em>San Francisco Examiner</em>, and the <em>Vallejo Times-Herald</em> &mdash; as well as to journalist Paul Avery and attorney Melvin Belli. He opened one letter with the chilling line, "This is the Zodiac speaking," and enclosed four cryptograms across his correspondence, famously known as the <strong>Z408</strong>, <strong>Z340</strong>, <strong>Z32</strong>, and <strong>Z13</strong> ciphers.</p>
+        <blockquote class="zodiac-quote">"I am the killer of the 2 teenagers last Christmas at Lake Herman and the girl last 4th of July..." &mdash; from the Zodiac's first cipher letter, July 31, 1969</blockquote>
+        <p>The 408-symbol cipher was cracked within a week by a schoolteacher and his wife in 1969. The notorious 340-character cipher, however, resisted every official and amateur attempt for over 51 years until a team of codebreakers finally solved it in December 2020. Two of his four cryptograms &mdash; the Z32 and Z13 &mdash; remain unsolved to this day.</p>
+      </section>
+
+      <section class="dossier">
+        <h4>The Investigation</h4>
+        <p>Despite one of the largest manhunts in American law enforcement history, the Zodiac was never caught. The only suspect ever named publicly by police was Arthur Leigh Allen, a former elementary school teacher and convicted sex offender who died in 1992 &mdash; but no conclusive forensic evidence ever tied him to the crimes.</p>
+        <p>The case was marked "inactive" by the San Francisco Police Department in 2004, then reopened in 2006. It remains officially open today with the California Department of Justice, the FBI, and multiple county sheriffs' departments, each still hoping DNA technology or an overlooked clue might finally close the file.</p>
+      </section>
+
+      <section class="dossier">
+        <h4>Why the Zodiac Still Haunts Us</h4>
+        <p>It's the combination of brilliance and cruelty: a killer who turned murder into a puzzle, who mailed proof of his crimes alongside codes designed to taunt rather than confess. Decades later, amateur sleuths, codebreakers, and investigators around the world continue to chase his identity &mdash; and now, so do you.</p>
+      </section>
+
+
+
+      <figure class="evidence">
+        <h4>Recovered Case File</h4>
+        <img src="images/case_file.png" alt="Aged handwritten Zodiac Killer notesheet">
+        <figcaption>EXHIBIT 01 &mdash; Field notes recovered from the archive. Study them carefully, Agent.</figcaption>
+      </figure>
+
+      <div style="text-align:center;margin:40px 0 10px;">
+        <button class="btn-gold" data-panel="huntPanel">Begin the Hunt ▸</button>
+      </div>
+    </div>
+
+    <!-- ============ HUNT PANEL ============ -->
+    <div class="panel" id="huntPanel">
+      <div class="panel-head">
+        <h3>The Hunt</h3>
+        <div class="sub">Solve in order &middot; the clock is running</div>
+      </div>
+
+      <div class="big-clock">
+        <div class="t" id="bigClock">00:00</div>
+        <div class="lbl">Mission Clock &mdash; running since you entered</div>
+      </div>
+
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-meta">
+          <span id="progressText">0 / 0 LEVELS CLEARED</span>
+          <span id="totalTimeText">TOTAL 00:00</span>
+        </div>
+      </div>
+
+      <div id="levelList"></div>
+
+      <div id="noLevels" class="level-card" style="display:none;text-align:center;">
+        <h4 style="font-family:'Cinzel',serif;color:var(--gold-bright);letter-spacing:.14em;text-transform:uppercase;margin:0 0 10px;">Clues Pending Release</h4>
+        <p style="color:#cdbf90;margin:0;line-height:1.8;">The archive is sealed for now, Agent. Your mission clock is already running &mdash; the first cipher will be released shortly.</p>
+      </div>
+
+      <div id="finishBox" style="display:none;text-align:center;margin-top:28px;">
+        <div class="level-card solved">
+          <h4 style="font-family:'Cinzel Decorative',serif;color:var(--gold-bright);margin:0 0 10px;">CASE CLOSED</h4>
+          <p style="color:#d8d2bd;margin:0 0 16px;">Every cipher broken, Agent. Your times are locked into the archive.</p>
+          <button class="btn-gold" data-panel="boardPanel">View Leaderboard</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ LEADERBOARD PANEL ============ -->
+    <div class="panel" id="boardPanel">
+      <div class="panel-head">
+        <h3>Leaderboard</h3>
+        <div class="sub" id="boardSub">Ranked by fastest Level 1</div>
+      </div>
+
+      <div class="table-scroll">
+        <table class="lb">
+          <thead>
+            <tr>
+              <th>#</th><th>Agent</th><th>Class</th><th>Sec</th>
+              <th>Adm.</th><th>Level 1 Time</th><th>Total Time</th><th>Pts</th>
+            </tr>
+          </thead>
+          <tbody id="lbBody"></tbody>
+        </table>
+      </div>
+      <div class="lb-note">
+        Scores are stored in this browser. Each device keeps its own archive —<br>
+        use <strong>Export CSV</strong> to collect results from the lab machines.
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    <div class="quest-line">THE QUEST BEGINS...</div>
+    <div class="dev-line">Developed by JCC</div>
+  </footer>
+</div>
+
+<div id="toast"></div>
+
+<!-- ==================================================================
+     GAME CONFIG — EDIT THIS BLOCK ONLY
+     ================================================================== -->
+<script id="GAME-CONFIG">
+const SETTINGS = {
+  // Ranking used when the leaderboard first opens:
+  // "level1"  -> fastest time on Level 1 wins (then total time)
+  // "total"   -> most levels cleared, then fastest total time
+  // "points"  -> highest points, then fastest total time
+  defaultSort: "level1",
+
+  // Seconds penalty added to a level's time each time a hint is opened.
+  hintPenaltySeconds: 30,
+
+  // Seconds penalty added for every wrong answer. Set to 0 to disable.
+  wrongAnswerPenaltySeconds: 10,
+
+  // Must levels be solved in order?
+  sequential: true
+};
+
+/* ------------------------------------------------------------------
+   LEVELS
+   Add a new level by copying one block and changing the values.
+   Fields:
+     title    : shown next to the level number
+     riddle   : the question / story text (HTML allowed)
+     cipher   : optional monospace code block (use "" to hide it)
+     answers  : array of accepted answers (case & space insensitive)
+     hint     : optional hint text ("" to hide the hint button)
+     points   : points awarded on solve
+   ------------------------------------------------------------------ */
+const LEVELS = [
+  /* ----------------------------------------------------------------
+     NO LEVELS YET — add them here when ready.
+     Copy this template inside the brackets, one block per level:
+
+     {
+       title:   "The First Signature",
+       riddle:  "Your question text here (HTML allowed).",
+       cipher:  "",                      // optional code block, "" to hide
+       answers: ["zodiac"],              // all accepted answers
+       hint:    "An optional nudge.",    // "" to hide the hint button
+       points:  100
+     },
+
+     Level 1's timer starts automatically at 00:00 when the agent enters.
+     Everything else — the hunt page, progress bar, leaderboard and
+     scoring — updates itself. Nothing below needs editing.
+     ---------------------------------------------------------------- */
+];
+</script>
+
+<!-- ==================================================================
+     ENGINE — you normally do not need to touch anything below
+     ================================================================== -->
+<script>
+(function(){
+  "use strict";
+
+  const AGENTS_KEY  = 'zodiacSeeker.agents.v2';
+  const CURRENT_KEY = 'zodiacSeeker.current.v2';
+
+  /* ---------- storage helpers ---------- */
+  const load = (k, fb) => { try { return JSON.parse(localStorage.getItem(k)) ?? fb; } catch(e){ return fb; } };
+  const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+  const getAgents = () => load(AGENTS_KEY, {});
+  const setAgents = a => save(AGENTS_KEY, a);
+
+  /* ---------- utils ---------- */
+  const norm = s => String(s).toLowerCase().replace(/[^a-z0-9]/g,'');
+  const fmt = s => {
+    if (s === null || s === undefined || !isFinite(s)) return '—';
+    s = Math.max(0, Math.round(s));
+    const m = Math.floor(s/60), r = s%60;
+    return String(m).padStart(2,'0') + ':' + String(r).padStart(2,'0');
+  };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const now = () => Date.now();
+
+  let toastT;
+  function toast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove('show'), 2600);
+  }
+
+  /* ---------- state ---------- */
+  let current = null;          // admission number of logged-in agent
+  let tickTimer = null;
+  let sortMode = SETTINGS.defaultSort || 'level1';
+
+  function agent(){ return getAgents()[current]; }
+  function updateAgent(fn){
+    const all = getAgents();
+    fn(all[current]);
+    setAgents(all);
+  }
+
+  function blankProgress(){
+    return LEVELS.map(() => ({ solved:false, startedAt:null, time:null, penalty:0, tries:0, hintUsed:false }));
+  }
+
+  // Level 1 is always live from the moment the agent enters; later levels
+  // start the instant the previous one is cracked.
+  function syncClocks(){
+    updateAgent(a => {
+      if(!a.sessionStart) a.sessionStart = now();
+      if(a.progress[0] && !a.progress[0].startedAt) a.progress[0].startedAt = a.sessionStart;
+      for(let i=1;i<a.progress.length;i++){
+        if(a.progress[i-1].solved && !a.progress[i].startedAt){
+          a.progress[i].startedAt = a.progress[i-1].solvedAtMs || now();
+        }
+      }
+    });
+  }
+
+  function missionElapsed(){
+    const a = agent();
+    if(!a || !a.sessionStart) return 0;
+    const done = LEVELS.length > 0 && a.progress.every(p=>p.solved);
+    if(done){
+      const last = Math.max(...a.progress.map(p=>p.solvedAtMs||0));
+      return (last - a.sessionStart)/1000;
+    }
+    return (now() - a.sessionStart)/1000;
+  }
+
+  /* ---------- AUTH ---------- */
+  const gate = document.getElementById('authGate');
+  const site = document.getElementById('siteBody');
+  const form = document.getElementById('authForm');
+  const msg  = document.getElementById('authMsg');
+  const admissionInput = document.getElementById('admission');
+
+  admissionInput.addEventListener('input', () => {
+    admissionInput.value = admissionInput.value.replace(/\D/g,'').slice(0,4);
+  });
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    msg.textContent = ''; msg.className = 'auth-msg';
+
+    const name = document.getElementById('name').value.trim();
+    const section = document.getElementById('section').value.trim();
+    const klass = document.getElementById('klass').value.trim();
+    const adm = admissionInput.value.trim();
+
+    if(!name || !section || !klass){
+      msg.textContent = 'All fields are required, Agent.'; msg.classList.add('error'); return;
+    }
+    if(!/^\d{4}$/.test(adm)){
+      msg.textContent = 'Admission number must be exactly 4 digits.'; msg.classList.add('error'); return;
+    }
+
+    const all = getAgents();
+    if(!all[adm]){
+      all[adm] = {
+        name, section, klass, admission: adm,
+        registeredAt: new Date().toISOString(),
+        sessionStart: now(),          // mission clock starts at 00:00 right here
+        progress: blankProgress()
+      };
+    } else {
+      // returning agent — keep their progress, refresh details
+      all[adm].name = name; all[adm].section = section; all[adm].klass = klass;
+      if(!all[adm].sessionStart) all[adm].sessionStart = now();
+      if(!Array.isArray(all[adm].progress) || all[adm].progress.length !== LEVELS.length){
+        const old = all[adm].progress || [];
+        all[adm].progress = blankProgress().map((p,i) => old[i] || p);
+      }
+    }
+    setAgents(all);
+    save(CURRENT_KEY, adm);
+
+    msg.textContent = 'Access granted. Welcome, Agent ' + name + '.';
+    msg.classList.add('success');
+    setTimeout(()=>unlock(adm), 700);
+  });
+
+  function unlock(adm){
+    current = adm;
+    gate.style.transition = 'opacity .55s ease';
+    gate.style.opacity = '0';
+    setTimeout(()=>{
+      gate.style.display = 'none';
+      site.classList.add('unlocked');
+      const a = agent();
+      document.getElementById('welcomeName').textContent = 'Welcome, Agent ' + a.name;
+      document.getElementById('agentChip').textContent = 'AGENT ' + a.name.toUpperCase() + ' · ADM ' + a.admission;
+      syncClocks();
+      paintClock();
+      renderLevels(); renderBoard();
+      startTicker();
+      window.scrollTo({top:0});
+    }, 550);
+  }
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if(logoutBtn) logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem(CURRENT_KEY);
+    location.reload();
+  });
+
+  /* ---------- PANEL NAV ---------- */
+  document.body.addEventListener('click', e => {
+    const btn = e.target.closest('[data-panel]');
+    if(!btn) return;
+    showPanel(btn.getAttribute('data-panel'));
+  });
+  function showPanel(id){
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === id));
+    if(id === 'boardPanel') renderBoard();
+    if(id === 'huntPanel') renderLevels();
+    document.querySelector('main').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  /* ---------- LEVELS ---------- */
+  function levelTime(p){
+    if(p.solved) return p.time;
+    if(p.startedAt) return (now() - p.startedAt)/1000 + p.penalty;
+    return null;
+  }
+  function clearedCount(a){ return a.progress.filter(p=>p.solved).length; }
+  function totalTime(a){
+    const solved = a.progress.filter(p=>p.solved);
+    if(!solved.length) return null;
+    const last = Math.max(...solved.map(p=>p.solvedAtMs||0));
+    if(a.sessionStart && last) return (last - a.sessionStart)/1000;
+    return solved.reduce((s,p)=>s+p.time,0);
+  }
+  function totalPoints(a){
+    return a.progress.reduce((s,p,i)=> s + (p.solved ? (LEVELS[i].points||0) : 0), 0);
+  }
+
+  function renderLevels(){
+    const a = agent(); if(!a) return;
+    const list = document.getElementById('levelList');
+    list.innerHTML = '';
+
+    const none = LEVELS.length === 0;
+    document.getElementById('noLevels').style.display = none ? 'block' : 'none';
+    document.getElementById('progressWrap').style.display = none ? 'none' : 'block';
+    if(none){
+      document.getElementById('finishBox').style.display = 'none';
+      return;
+    }
+
+    LEVELS.forEach((lv, i) => {
+      const p = a.progress[i];
+      const prevSolved = i === 0 || a.progress[i-1].solved;
+      const locked = SETTINGS.sequential && !prevSolved && !p.solved;
+
+      const card = document.createElement('div');
+      card.className = 'level-card ' + (p.solved ? 'solved' : locked ? 'locked' : 'current');
+      card.dataset.index = i;
+
+      let inner = `
+        <div class="level-top">
+          <span class="level-no">LEVEL ${i+1}</span>
+          <h4 class="level-title">${lv.title}</h4>
+          <span class="level-timer" data-timer="${i}">${fmt(levelTime(p))}</span>
+        </div>`;
+
+      if(locked){
+        inner += `<div class="locked-line">🔒 LOCKED — clear Level ${i} first.</div>`;
+      } else if(p.solved){
+        inner += `<div class="solved-line">✔ SOLVED in ${fmt(p.time)} &nbsp;·&nbsp; ${lv.points||0} pts &nbsp;·&nbsp; ${p.tries} attempt${p.tries===1?'':'s'}${p.hintUsed?' · hint used':''}</div>`;
+      } else {
+        inner += `<div class="level-body">
+            <p class="riddle">${lv.riddle}</p>
+            ${lv.cipher ? `<div class="cipher">${lv.cipher}</div>` : ''}
+            <div class="answer-row">
+              <input type="text" placeholder="Type your answer…" data-input="${i}" autocomplete="off">
+              <button class="btn-gold" data-submit="${i}">Submit</button>
+              ${lv.hint ? `<button class="btn-line" data-hint="${i}">Hint (+${SETTINGS.hintPenaltySeconds}s)</button>` : ''}
+            </div>
+            <div class="hint-box" data-hintbox="${i}">${lv.hint || ''}</div>
+            <div class="feedback" data-fb="${i}"></div>
+          </div>`;
+      }
+      card.innerHTML = inner;
+      list.appendChild(card);
+    });
+
+    // progress bar
+    const done = clearedCount(a);
+    document.getElementById('progressFill').style.width = (done/LEVELS.length*100) + '%';
+    document.getElementById('progressText').textContent = `${done} / ${LEVELS.length} LEVELS CLEARED`;
+    document.getElementById('totalTimeText').textContent = 'TOTAL ' + fmt(totalTime(a));
+    document.getElementById('finishBox').style.display = (LEVELS.length && done === LEVELS.length) ? 'block' : 'none';
+  }
+
+  document.addEventListener('click', e => {
+    const s = e.target.closest('[data-start]');
+    if(s){ startLevel(+s.dataset.start); return; }
+    const sub = e.target.closest('[data-submit]');
+    if(sub){ submitLevel(+sub.dataset.submit); return; }
+    const h = e.target.closest('[data-hint]');
+    if(h){ useHint(+h.dataset.hint); return; }
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Enter' && e.target.dataset && e.target.dataset.input !== undefined){
+      e.preventDefault(); submitLevel(+e.target.dataset.input);
+    }
+  });
+
+  function startLevel(i){
+    updateAgent(a => { if(!a.progress[i].startedAt) a.progress[i].startedAt = now(); });
+    renderLevels();
+    const inp = document.querySelector(`[data-input="${i}"]`);
+    if(inp) inp.focus();
+  }
+
+  function useHint(i){
+    const box = document.querySelector(`[data-hintbox="${i}"]`);
+    if(!box || box.style.display === 'block') return;
+    box.style.display = 'block';
+    updateAgent(a => {
+      if(!a.progress[i].hintUsed){
+        a.progress[i].hintUsed = true;
+        a.progress[i].penalty += SETTINGS.hintPenaltySeconds;
+      }
+    });
+    toast('Hint revealed · +' + SETTINGS.hintPenaltySeconds + 's penalty');
+  }
+
+  function submitLevel(i){
+    const inp = document.querySelector(`[data-input="${i}"]`);
+    const fb  = document.querySelector(`[data-fb="${i}"]`);
+    if(!inp) return;
+    const val = inp.value.trim();
+    if(!val){ fb.className='feedback bad'; fb.textContent='Enter an answer, Agent.'; return; }
+
+    const ok = LEVELS[i].answers.some(ans => norm(ans) === norm(val));
+    updateAgent(a => {
+      const p = a.progress[i];
+      p.tries = (p.tries||0) + 1;
+      if(ok){
+        p.solved = true;
+        p.solvedAtMs = now();
+        p.time = (p.solvedAtMs - (p.startedAt || a.sessionStart))/1000 + p.penalty;
+        p.solvedAt = new Date().toISOString();
+        if(a.progress[i+1] && !a.progress[i+1].startedAt) a.progress[i+1].startedAt = p.solvedAtMs;
+      } else {
+        p.penalty += SETTINGS.wrongAnswerPenaltySeconds;
+      }
+    });
+
+    if(ok){
+      const t = agent().progress[i].time;
+      toast('Level ' + (i+1) + ' cracked in ' + fmt(t));
+      renderLevels(); renderBoard();
+    } else {
+      fb.className = 'feedback bad';
+      fb.textContent = 'Incorrect.' + (SETTINGS.wrongAnswerPenaltySeconds ? ' +' + SETTINGS.wrongAnswerPenaltySeconds + 's penalty.' : '') + ' Try again.';
+      inp.select();
+    }
+  }
+
+  /* live timers */
+  function startTicker(){
+    clearInterval(tickTimer);
+    tickTimer = setInterval(() => {
+      const a = agent(); if(!a) return;
+      paintClock();
+      document.querySelectorAll('[data-timer]').forEach(el => {
+        const i = +el.dataset.timer;
+        const p = a.progress[i];
+        if(p && !p.solved && p.startedAt) el.textContent = fmt(levelTime(p));
+      });
+    }, 1000);
+  }
+
+  function paintClock(){
+    const a = agent(); if(!a) return;
+    const t = fmt(missionElapsed());
+    const rc = document.getElementById('runClockTime');
+    const bc = document.getElementById('bigClock');
+    if(rc) rc.textContent = t;
+    if(bc) bc.textContent = t;
+    const done = LEVELS.length > 0 && a.progress.every(p=>p.solved);
+    const wrap = document.getElementById('runClock');
+    if(wrap) wrap.classList.toggle('stopped', done);
+  }
+
+  /* ---------- LEADERBOARD ---------- */
+  const SORTS = {
+    level1: {
+      label: 'Ranked by fastest Level 1',
+      cmp: (x,y) => {
+        const a1 = x.l1 ?? Infinity, b1 = y.l1 ?? Infinity;
+        if(a1 !== b1) return a1 - b1;
+        if(y.cleared !== x.cleared) return y.cleared - x.cleared;
+        return (x.total ?? Infinity) - (y.total ?? Infinity);
+      }
+    },
+    total: {
+      label: 'Ranked by fastest total time',
+      cmp: (x,y) => {
+        const a=x.total ?? Infinity, b=y.total ?? Infinity;
+        if(a!==b) return a-b;
+        return y.cleared - x.cleared;
+      }
+    },
+    points: {
+      label: 'Ranked by points, then fastest total time',
+      cmp: (x,y) => {
+        if(y.points !== x.points) return y.points - x.points;
+        return (x.total ?? Infinity) - (y.total ?? Infinity);
+      }
+    }
+  };
+
+  function rows(){
+    const all = getAgents();
+    return Object.values(all).map(a => ({
+      name:a.name, klass:a.klass, section:a.section, adm:a.admission,
+      cleared: clearedCount(a),
+      l1: a.progress[0] && a.progress[0].solved ? a.progress[0].time : null,
+      total: totalTime(a),
+      points: totalPoints(a)
+    }));
+  }
+
+  function renderBoard(){
+    const data = rows().sort(SORTS[sortMode].cmp);
+    document.getElementById('boardSub').textContent = SORTS[sortMode].label;
+    const body = document.getElementById('lbBody');
+    if(!data.length){
+      body.innerHTML = `<tr><td colspan="8" class="empty-lb">NO AGENTS ON RECORD YET</td></tr>`;
+      return;
+    }
+    body.innerHTML = data.map((r,i) => `
+      <tr class="${r.adm === current ? 'me' : ''}">
+        <td class="rank r${i+1}">${i+1}</td>
+        <td>${esc(r.name)}</td>
+        <td>${esc(r.klass)}</td>
+        <td>${esc(r.section)}</td>
+        <td class="mono">${esc(r.adm)}</td>
+        <td class="mono">${fmt(r.l1)}</td>
+        <td class="mono">${fmt(r.total)}</td>
+        <td class="mono">${r.points}</td>
+      </tr>`).join('');
+  }
+
+  document.querySelectorAll('[data-sort]').forEach(b => {
+    b.addEventListener('click', () => { sortMode = b.dataset.sort; renderBoard(); });
+  });
+
+  const exportBtn = document.getElementById('exportBtn');
+  if(exportBtn) exportBtn.addEventListener('click', () => {
+    const data = rows().sort(SORTS[sortMode].cmp);
+    const head = ['Rank','Name','Class','Section','Admission','Level1(s)','Total(s)','Points'];
+    const lines = [head.join(',')].concat(data.map((r,i) =>
+      [i+1, '"'+r.name.replace(/"/g,'""')+'"', r.klass, r.section, r.adm,
+       r.l1 != null ? r.l1.toFixed(1) : '',
+       r.total != null ? r.total.toFixed(1) : '',
+       r.points].join(',')));
+    const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'zodiac-seeker-leaderboard.csv'; a.click();
+    URL.revokeObjectURL(url);
+    toast('Leaderboard exported');
+  });
+
+  const resetBtn = document.getElementById('resetBtn');
+  if(resetBtn) resetBtn.addEventListener('click', () => {
+    if(!confirm('Erase ALL agents and scores from this browser? This cannot be undone.')) return;
+    localStorage.removeItem(AGENTS_KEY);
+    localStorage.removeItem(CURRENT_KEY);
+    location.reload();
+  });
+
+  /* ---------- auto-resume ---------- */
+  const saved = load(CURRENT_KEY, null);
+  if(saved && getAgents()[saved]){
+    const all = getAgents();
+    if(!Array.isArray(all[saved].progress) || all[saved].progress.length !== LEVELS.length){
+      const old = all[saved].progress || [];
+      all[saved].progress = blankProgress().map((p,i)=> old[i] || p);
+      setAgents(all);
+    }
+    unlock(saved);
+  }
+})();
+</script>
+
+</body>
+</html>
